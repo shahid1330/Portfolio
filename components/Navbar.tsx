@@ -81,7 +81,7 @@ export default function Navbar() {
               className="relative group cursor-pointer"
               onClick={() => scrollToSection('#about')}
             >
-              <h1 className="font-bold text-3xl bg-gradient-to-r from-primary-300 via-secondary-300 to-accent-300 bg-clip-text text-transparent tracking-tight">
+              <h1 className="font-bold text-xl bg-gradient-to-r from-primary-300 via-secondary-300 to-accent-300 bg-clip-text text-transparent tracking-tight">
                 Mohammad Shahid Raza
               </h1>
               <motion.div 
