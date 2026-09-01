@@ -1,218 +1,176 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useCallback, useEffect, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
+import ThemeToggle from './ThemeToggle';
 
 const navLinks = [
-  { name: 'About', href: '#about' },
-  { name: 'Experience', href: '#experience' },
-  { name: 'Projects', href: '#projects' },
-  { name: 'Skills', href: '#skills' },
-  { name: 'Education', href: '#education' },
-  { name: 'Certifications', href: '#certifications' },
-  { name: 'Research', href: '#research' },
-  { name: 'Leadership', href: '#leadership' },
-  { name: 'Contact', href: '#contact' },
+  { name: 'About', href: 'about' },
+  { name: 'Experience', href: 'experience' },
+  { name: 'Projects', href: 'projects' },
+  { name: 'Skills', href: 'skills' },
+  { name: 'Education', href: 'education' },
+  { name: 'Certifications', href: 'certifications' },
+  { name: 'Research', href: 'research' },
+  { name: 'Leadership', href: 'leadership' },
+  { name: 'Contact', href: 'contact' },
 ];
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [activeSection, setActiveSection] = useState('about');
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [active, setActive] = useState('about');
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
-      
-      // Update active section based on scroll position
-      const sections = navLinks.map(link => link.href.substring(1));
-      const current = sections.find(section => {
-        const element = document.getElementById(section);
-        if (element) {
-          const rect = element.getBoundingClientRect();
-          return rect.top <= 100 && rect.bottom >= 100;
-        }
-        return false;
-      });
-      
-      if (current) setActiveSection(current);
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    const onScroll = () => setIsScrolled(window.scrollY > 24);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const scrollToSection = (href: string) => {
-    const element = document.querySelector(href);
-    if (element) {
-      const offset = 80;
-      const elementPosition = element.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.pageYOffset - offset;
+  // IntersectionObserver instead of measuring rects on every scroll frame.
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+        if (visible) setActive(visible.target.id);
+      },
+      { rootMargin: '-96px 0px -55% 0px', threshold: [0.05, 0.25, 0.5] }
+    );
 
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: 'smooth'
-      });
+    navLinks.forEach(({ href }) => {
+      const el = document.getElementById(href);
+      if (el) observer.observe(el);
+    });
+    return () => observer.disconnect();
+  }, []);
+
+  // Lock body scroll while the mobile drawer is open.
+  useEffect(() => {
+    document.body.style.overflow = isMenuOpen ? 'hidden' : '';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isMenuOpen]);
+
+  const scrollTo = useCallback((id: string) => {
+    const el = document.getElementById(id);
+    if (el) {
+      const top = el.getBoundingClientRect().top + window.scrollY - 80;
+      window.scrollTo({ top, behavior: 'smooth' });
     }
-    setIsMobileMenuOpen(false);
-  };
+    setIsMenuOpen(false);
+  }, []);
 
   return (
     <>
-      <motion.nav
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-          isScrolled 
-            ? 'bg-dark-900/95 backdrop-blur-xl shadow-2xl shadow-black/20 border-b border-primary-500/20' 
-            : 'bg-dark-900/60 backdrop-blur-md'
+      <header
+        className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
+          isScrolled
+            ? 'border-b border-line bg-canvas/80 backdrop-blur-xl'
+            : 'border-b border-transparent bg-transparent'
         }`}
       >
-        {/* Decorative top border */}
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-primary-400/60 to-transparent" />
-        
-        <div className="max-w-7xl mx-auto px-8 sm:px-12 lg:px-16">
-          <div className="flex items-center justify-between h-24">
-            {/* Logo */}
-            <motion.div
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.98 }}
-              className="relative group cursor-pointer"
-              onClick={() => scrollToSection('#about')}
-            >
-              <h1 className="font-bold text-xl bg-gradient-to-r from-primary-300 via-secondary-300 to-accent-300 bg-clip-text text-transparent tracking-tight">
-                Mohammad Shahid Raza
-              </h1>
-              <motion.div 
-                className="h-[2px] bg-gradient-to-r from-primary-400 via-secondary-400 to-accent-400 mt-1"
-                initial={{ width: 0 }}
-                whileHover={{ width: '100%' }}
-                transition={{ duration: 0.3 }}
-              />
-            </motion.div>
+        <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-4 px-5 sm:px-6 lg:h-18 lg:px-8">
+          {/* Brand: monogram always, full name only where there is room. */}
+          <button
+            onClick={() => scrollTo('about')}
+            className="flex shrink-0 items-center gap-2.5 text-left"
+          >
+            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand text-sm font-bold text-brand-ink">
+              MR
+            </span>
+            <span className="hidden text-sm font-semibold tracking-tight text-ink sm:inline lg:hidden xl:inline">
+              Mohammad Shahid Raza
+            </span>
+          </button>
 
-            {/* Desktop Navigation */}
-            <div className="hidden lg:flex items-center gap-10">
-              {navLinks.map((link) => (
-                <motion.button
-                  key={link.name}
-                  onClick={() => scrollToSection(link.href)}
-                  whileHover={{ y: -2 }}
-                  className="relative group py-2"
-                >
-                  <span className={`text-base font-medium transition-all duration-300 ${
-                    activeSection === link.href.substring(1)
-                      ? 'text-primary-300'
-                      : 'text-gray-300 group-hover:text-white'
-                  }`}>
-                    {link.name}
-                  </span>
-                  
-                  {/* Underline effect */}
-                  {activeSection === link.href.substring(1) ? (
-                    <motion.div
-                      layoutId="navUnderline"
-                      className="absolute -bottom-1 left-0 right-0 h-[2px] bg-gradient-to-r from-primary-400 to-secondary-400 rounded-full"
-                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                    />
-                  ) : (
-                    <div className="absolute -bottom-1 left-0 right-0 h-[2px] bg-gradient-to-r from-primary-400 to-secondary-400 rounded-full scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
-                  )}
-                </motion.button>
-              ))}
-            </div>
+          {/* Desktop nav */}
+          <nav className="hidden items-center gap-0.5 lg:flex">
+            {navLinks.map((link) => (
+              <button
+                key={link.href}
+                onClick={() => scrollTo(link.href)}
+                className={`relative rounded-lg px-2.5 py-2 text-[13px] font-medium transition-colors xl:px-3 ${
+                  active === link.href ? 'text-brand' : 'text-muted hover:text-ink'
+                }`}
+              >
+                {link.name}
+                {active === link.href && (
+                  <motion.span
+                    layoutId="nav-active"
+                    className="absolute inset-x-2 -bottom-px h-0.5 rounded-full bg-brand"
+                    transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+                  />
+                )}
+              </button>
+            ))}
+          </nav>
 
-            {/* Mobile Menu Button */}
-            <motion.button
-              whileTap={{ scale: 0.9 }}
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="lg:hidden p-3 rounded-xl bg-primary-500/10 hover:bg-primary-500/20 border border-primary-500/30 transition-all duration-300"
+          <div className="flex shrink-0 items-center gap-2">
+            <ThemeToggle />
+            <button
+              type="button"
+              onClick={() => setIsMenuOpen(true)}
+              aria-label="Open navigation menu"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-line bg-surface text-muted transition-colors hover:text-ink lg:hidden"
             >
-              {isMobileMenuOpen ? (
-                <X className="w-6 h-6 text-primary-300" />
-              ) : (
-                <Menu className="w-6 h-6 text-primary-300" />
-              )}
-            </motion.button>
+              <Menu className="h-[18px] w-[18px]" />
+            </button>
           </div>
         </div>
-        
-        {/* Bottom glow effect */}
-        <div className={`absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-primary-500/30 to-transparent transition-opacity duration-500 ${isScrolled ? 'opacity-100' : 'opacity-0'}`} />
-      </motion.nav>
+      </header>
 
-      {/* Mobile Menu */}
+      {/* Mobile drawer */}
       <AnimatePresence>
-        {isMobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, x: '100%' }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: '100%' }}
-            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className="fixed inset-y-0 right-0 z-40 w-80 bg-gradient-to-b from-dark-900/98 to-dark-800/98 backdrop-blur-2xl border-l border-primary-500/30 lg:hidden shadow-2xl shadow-primary-500/20"
-          >
-            {/* Decorative elements */}
-            <div className="absolute top-0 right-0 w-40 h-40 bg-primary-500/10 rounded-full blur-3xl" />
-            <div className="absolute bottom-0 left-0 w-40 h-40 bg-secondary-500/10 rounded-full blur-3xl" />
-            
-            <div className="relative flex flex-col h-full pt-24 px-6">
-              <div className="mb-8">
-                <h3 className="text-lg font-bold bg-gradient-to-r from-primary-300 to-accent-300 bg-clip-text text-transparent mb-2">
-                  Navigation
-                </h3>
-                <div className="h-1 w-16 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-full" />
+        {isMenuOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsMenuOpen(false)}
+              className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm lg:hidden"
+            />
+            <motion.nav
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', stiffness: 320, damping: 34 }}
+              className="fixed inset-y-0 right-0 z-50 flex w-[min(20rem,85vw)] flex-col border-l border-line bg-surface lg:hidden"
+            >
+              <div className="flex h-16 shrink-0 items-center justify-between border-b border-line px-5">
+                <span className="text-sm font-semibold text-ink">Navigation</span>
+                <button
+                  type="button"
+                  onClick={() => setIsMenuOpen(false)}
+                  aria-label="Close navigation menu"
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-line text-muted hover:text-ink"
+                >
+                  <X className="h-[18px] w-[18px]" />
+                </button>
               </div>
-              
-              <div className="space-y-2 overflow-y-auto flex-1">
-                {navLinks.map((link, index) => (
-                  <motion.button
-                    key={link.name}
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                    onClick={() => scrollToSection(link.href)}
-                    className={`w-full text-left py-4 px-5 rounded-xl transition-all duration-300 group ${
-                      activeSection === link.href.substring(1)
-                        ? 'bg-gradient-to-r from-primary-500/30 to-secondary-500/30 text-white border border-primary-500/50 shadow-lg shadow-primary-500/20'
-                        : 'text-gray-300 hover:bg-primary-500/10 hover:text-white border border-transparent hover:border-primary-500/30'
+
+              <div className="flex-1 overflow-y-auto p-3">
+                {navLinks.map((link) => (
+                  <button
+                    key={link.href}
+                    onClick={() => scrollTo(link.href)}
+                    className={`w-full rounded-lg px-4 py-3 text-left text-sm font-medium transition-colors ${
+                      active === link.href
+                        ? 'bg-brand-soft text-brand'
+                        : 'text-muted hover:bg-elevated hover:text-ink'
                     }`}
                   >
-                    <div className="flex items-center justify-between">
-                      <span className="font-semibold text-base">{link.name}</span>
-                      <motion.div
-                        className={`w-2 h-2 rounded-full transition-colors ${
-                          activeSection === link.href.substring(1)
-                            ? 'bg-primary-400'
-                            : 'bg-gray-600 group-hover:bg-primary-400'
-                        }`}
-                        animate={activeSection === link.href.substring(1) ? { scale: [1, 1.3, 1] } : {}}
-                        transition={{ repeat: Infinity, duration: 2 }}
-                      />
-                    </div>
-                  </motion.button>
+                    {link.name}
+                  </button>
                 ))}
               </div>
-              
-              {/* Decorative footer */}
-              <div className="mt-6 pt-6 border-t border-primary-500/20">
-                <p className="text-xs text-gray-500 text-center">Tap any section to navigate</p>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Mobile Menu Overlay */}
-      <AnimatePresence>
-        {isMobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setIsMobileMenuOpen(false)}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-30 lg:hidden"
-          />
+            </motion.nav>
+          </>
         )}
       </AnimatePresence>
     </>

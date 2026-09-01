@@ -2,208 +2,291 @@
 
 import { motion } from 'framer-motion';
 import { useState } from 'react';
+import {
+  AlertCircle,
+  CheckCircle2,
+  Github,
+  Linkedin,
+  Loader2,
+  Mail,
+  Send,
+} from 'lucide-react';
+import { personalInfo } from '@/lib/data';
+import { Card, Section, SectionHeading } from './ui/Section';
+
+const inputClass =
+  'w-full rounded-lg border border-line bg-canvas px-3.5 py-2.5 text-sm text-ink placeholder:text-muted/70 transition-colors focus:border-brand focus:outline-none disabled:opacity-60';
+
+type Status = 'idle' | 'sending' | 'sent' | 'error';
+
+const emptyForm = { firstName: '', lastName: '', email: '', message: '', company: '' };
+
+/** Reasons the route can return, mapped to something a visitor can act on. */
+const errorCopy: Record<string, string> = {
+  not_configured:
+    'The form is not connected yet. Please email me directly using the address below.',
+  invalid: 'Please check your name, email address and message, then try again.',
+  rate_limited: 'That is a lot of messages at once. Please wait a minute and retry.',
+  provider_error:
+    'The message could not be delivered. Please email me directly using the address below.',
+  network:
+    'Could not reach the server. Check your connection, or email me directly below.',
+};
 
 export default function ContactSection() {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    message: '',
-  });
-  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [form, setForm] = useState(emptyForm);
+  const [status, setStatus] = useState<Status>('idle');
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setStatus('loading');
+    if (status === 'sending') return;
 
-    // Simulate form submission
-    setTimeout(() => {
-      setStatus('success');
-      setFormData({ name: '', email: '', message: '' });
-      setTimeout(() => setStatus('idle'), 3000);
-    }, 1500);
+    // The site is a static export on GitHub Pages, so there is no server to
+    // proxy through — the browser posts to Web3Forms directly. Their access
+    // keys are designed to be public for exactly this case.
+    const accessKey = process.env.NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY;
+    if (!accessKey) {
+      setStatus('error');
+      setErrorMessage(errorCopy.not_configured);
+      return;
+    }
+
+    // Bots fill every field they find; a human never sees this one. Report
+    // success so the bot does not retry, but send nothing.
+    if (form.company.trim()) {
+      setStatus('sent');
+      setForm(emptyForm);
+      return;
+    }
+
+    setStatus('sending');
+    setErrorMessage('');
+
+    const name = `${form.firstName} ${form.lastName}`.trim();
+
+    try {
+      const res = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({
+          access_key: accessKey,
+          subject: `Portfolio enquiry from ${name}`,
+          from_name: 'Portfolio contact form',
+          // Hitting reply in the inbox goes straight back to the sender.
+          replyto: form.email,
+          name,
+          email: form.email,
+          message: form.message,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+
+      if (res.ok && data.success) {
+        setStatus('sent');
+        setForm(emptyForm);
+        return;
+      }
+
+      setStatus('error');
+      setErrorMessage(errorCopy.provider_error);
+    } catch {
+      setStatus('error');
+      setErrorMessage(errorCopy.network);
+    }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
+  const sending = status === 'sending';
 
   return (
-    <section id="contact" className="relative py-32 overflow-hidden">
-      {/* Background */}
-      <div className="absolute inset-0 bg-gradient-to-b from-noir-900 via-noir-800 to-noir-950" />
-      
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-aurora-cyan/10 rounded-full blur-3xl" />
+    <Section id="contact">
+      <SectionHeading
+        eyebrow="Contact"
+        title="Get in touch"
+        subtitle="Open to roles, collaborations and conversations about applied AI."
+        tone="c"
+      />
 
-      <div className="relative container mx-auto px-6">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-16"
-        >
-          <h2 className="text-5xl md:text-6xl font-bold mb-4">
-            Let's Build <span className="neon-text">Something Intelligent</span>
-          </h2>
-          <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-            Open to opportunities in AI/ML Engineering, Data Science, and innovative tech projects
-          </p>
-        </motion.div>
-
-        <div className="max-w-3xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="glass-panel"
-          >
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Name Field */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: '-60px' }}
+        transition={{ duration: 0.4 }}
+        className="mx-auto max-w-2xl"
+      >
+        <Card className="p-6 sm:p-8">
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div className="grid gap-5 sm:grid-cols-2">
               <div>
-                <label htmlFor="name" className="block text-sm font-semibold mb-2 text-gray-300">
-                  Your Name
+                <label
+                  htmlFor="firstName"
+                  className="mb-1.5 block text-sm font-medium text-ink"
+                >
+                  First name
                 </label>
                 <input
+                  id="firstName"
+                  name="firstName"
                   type="text"
-                  id="name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
                   required
-                  className="w-full px-4 py-3 rounded-lg glass border border-white/20 focus:border-aurora-cyan focus:outline-none focus:ring-2 focus:ring-aurora-cyan/50 transition-all text-white"
-                  placeholder="John Doe"
+                  disabled={sending}
+                  value={form.firstName}
+                  onChange={handleChange}
+                  placeholder="Ada"
+                  className={inputClass}
                 />
               </div>
-
-              {/* Email Field */}
               <div>
-                <label htmlFor="email" className="block text-sm font-semibold mb-2 text-gray-300">
-                  Email Address
+                <label
+                  htmlFor="lastName"
+                  className="mb-1.5 block text-sm font-medium text-ink"
+                >
+                  Last name
                 </label>
                 <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
+                  id="lastName"
+                  name="lastName"
+                  type="text"
+                  disabled={sending}
+                  value={form.lastName}
                   onChange={handleChange}
-                  required
-                  className="w-full px-4 py-3 rounded-lg glass border border-white/20 focus:border-aurora-cyan focus:outline-none focus:ring-2 focus:ring-aurora-cyan/50 transition-all text-white"
-                  placeholder="john@example.com"
+                  placeholder="Lovelace"
+                  className={inputClass}
                 />
-              </div>
-
-              {/* Message Field */}
-              <div>
-                <label htmlFor="message" className="block text-sm font-semibold mb-2 text-gray-300">
-                  Message
-                </label>
-                <textarea
-                  id="message"
-                  name="message"
-                  value={formData.message}
-                  onChange={handleChange}
-                  required
-                  rows={6}
-                  className="w-full px-4 py-3 rounded-lg glass border border-white/20 focus:border-aurora-cyan focus:outline-none focus:ring-2 focus:ring-aurora-cyan/50 transition-all text-white resize-none"
-                  placeholder="I'd love to connect regarding opportunities in AI, Machine Learning, or Data Engineering."
-                />
-              </div>
-
-              {/* Submit Button */}
-              <motion.button
-                type="submit"
-                disabled={status === 'loading'}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className={`
-                  w-full py-4 rounded-full font-bold text-lg
-                  bg-gradient-to-r from-aurora-purple to-aurora-cyan
-                  text-white shadow-neon
-                  disabled:opacity-50 disabled:cursor-not-allowed
-                  transition-all duration-300
-                  flex items-center justify-center gap-3
-                `}
-              >
-                {status === 'loading' ? (
-                  <>
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    Sending...
-                  </>
-                ) : status === 'success' ? (
-                  <>
-                    <span>✓</span>
-                    Message Sent!
-                  </>
-                ) : (
-                  <>
-                    Start the Conversation
-                    <span>→</span>
-                  </>
-                )}
-              </motion.button>
-
-              {/* Status Messages */}
-              {status === 'success' && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="text-center text-aurora-cyan font-medium"
-                >
-                  Thank you! I'll get back to you soon.
-                </motion.div>
-              )}
-
-              {status === 'error' && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="text-center text-aurora-pink font-medium"
-                >
-                  Something went wrong. Please try again.
-                </motion.div>
-              )}
-            </form>
-
-            {/* Alternative Contact Methods */}
-            <div className="mt-12 pt-8 border-t border-white/10">
-              <p className="text-center text-gray-400 mb-6">
-                Or reach out directly
-              </p>
-              <div className="flex flex-wrap justify-center gap-4">
-                <a
-                  href="mailto:your-email@example.com"
-                  className="glass-card glass-hover px-6 py-3 rounded-full border-aurora-purple/40 hover:border-aurora-purple transition-all flex items-center gap-2"
-                >
-                  <span>📧</span>
-                  <span>Email</span>
-                </a>
-                <a
-                  href={process.env.NEXT_PUBLIC_LINKEDIN || '#'}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="glass-card glass-hover px-6 py-3 rounded-full border-aurora-blue/40 hover:border-aurora-blue transition-all flex items-center gap-2"
-                >
-                  <span>💼</span>
-                  <span>LinkedIn</span>
-                </a>
-                <a
-                  href={process.env.NEXT_PUBLIC_GITHUB || '#'}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="glass-card glass-hover px-6 py-3 rounded-full border-aurora-cyan/40 hover:border-aurora-cyan transition-all flex items-center gap-2"
-                >
-                  <span>💻</span>
-                  <span>GitHub</span>
-                </a>
               </div>
             </div>
-          </motion.div>
-        </div>
-      </div>
-    </section>
+
+            <div>
+              <label
+                htmlFor="email"
+                className="mb-1.5 block text-sm font-medium text-ink"
+              >
+                Email address
+              </label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                required
+                disabled={sending}
+                value={form.email}
+                onChange={handleChange}
+                placeholder="you@example.com"
+                className={inputClass}
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="message"
+                className="mb-1.5 block text-sm font-medium text-ink"
+              >
+                Message
+              </label>
+              <textarea
+                id="message"
+                name="message"
+                required
+                rows={5}
+                maxLength={5000}
+                disabled={sending}
+                value={form.message}
+                onChange={handleChange}
+                placeholder="What would you like to discuss?"
+                className={`${inputClass} resize-y`}
+              />
+            </div>
+
+            {/* Honeypot: off-screen and hidden from assistive tech, so only bots fill it. */}
+            <div aria-hidden className="absolute left-[-9999px] h-0 w-0 overflow-hidden">
+              <label htmlFor="company">Company</label>
+              <input
+                id="company"
+                name="company"
+                type="text"
+                tabIndex={-1}
+                autoComplete="off"
+                value={form.company}
+                onChange={handleChange}
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={sending}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-brand px-5 py-3 text-sm font-semibold text-brand-ink transition-colors hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-70"
+            >
+              {sending ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Sending…
+                </>
+              ) : (
+                <>
+                  <Send className="h-4 w-4" />
+                  Send message
+                </>
+              )}
+            </button>
+
+            {/* aria-live so screen readers announce the outcome. */}
+            <div aria-live="polite" className="min-h-0">
+              {status === 'sent' && (
+                <p className="flex items-start gap-2 rounded-lg border border-support/30 bg-support-soft px-3.5 py-3 text-sm text-ink">
+                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-support" />
+                  Thanks — your message has been sent. I will reply to the address
+                  you gave.
+                </p>
+              )}
+              {status === 'error' && (
+                <p className="flex items-start gap-2 rounded-lg border border-line bg-elevated px-3.5 py-3 text-sm text-ink">
+                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
+                  {errorMessage}
+                </p>
+              )}
+            </div>
+          </form>
+
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-3 border-t border-line pt-6 text-sm">
+            {/* Each link renders only when its value is configured. */}
+            {personalInfo.email && (
+              <a
+                href={`mailto:${personalInfo.email}`}
+                className="inline-flex items-center gap-2 text-muted transition-colors hover:text-brand"
+              >
+                <Mail className="h-4 w-4" />
+                {personalInfo.email}
+              </a>
+            )}
+            {personalInfo.social.github && (
+              <a
+                href={personalInfo.social.github}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-muted transition-colors hover:text-brand"
+              >
+                <Github className="h-4 w-4" />
+                GitHub
+              </a>
+            )}
+            {personalInfo.social.linkedin && (
+              <a
+                href={personalInfo.social.linkedin}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-muted transition-colors hover:text-brand"
+              >
+                <Linkedin className="h-4 w-4" />
+                LinkedIn
+              </a>
+            )}
+          </div>
+        </Card>
+      </motion.div>
+    </Section>
   );
 }

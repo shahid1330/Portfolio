@@ -1,22 +1,22 @@
 import Navbar from '@/components/Navbar';
-import HeroSection from '@/components/NewHeroSection';
-import ExperienceSection from '@/components/NewExperienceSection';
-import ProjectsSection from '@/components/NewProjectsSection';
-import SkillsSection from '@/components/NewSkillsSection';
+import HeroSection from '@/components/HeroSection';
+import ExperienceSection from '@/components/ExperienceSection';
+import ProjectsSection from '@/components/ProjectsSection';
+import SkillsSection from '@/components/SkillsSection';
 import EducationSection from '@/components/EducationSection';
-import CertificationsSection from '@/components/NewCertificationsSection';
+import CertificationsSection from '@/components/CertificationsSection';
 import ResearchSection from '@/components/ResearchSection';
+import LeadershipSection from '@/components/LeadershipSection';
 import CodingProfilesSection from '@/components/CodingProfilesSection';
-import LeadershipSection from '@/components/NewLeadershipSection';
-import ContactSection from '@/components/NewContactSection';
-import Footer from '@/components/NewFooter';
-import SmoothScroll from '@/components/SmoothScroll';
+import ContactSection from '@/components/ContactSection';
+import Footer from '@/components/Footer';
+import Chatbot from '@/components/Chatbot';
 
 export default function Home() {
   return (
-    <SmoothScroll>
+    <>
       <Navbar />
-      <main className="min-h-screen">
+      <main>
         <HeroSection />
         <ExperienceSection />
         <ProjectsSection />
@@ -24,12 +24,12 @@ export default function Home() {
         <EducationSection />
         <CertificationsSection />
         <ResearchSection />
-        <CodingProfilesSection />
         <LeadershipSection />
+        <CodingProfilesSection />
         <ContactSection />
       </main>
       <Footer />
-    </SmoothScroll>
+      <Chatbot />
+    </>
   );
 }
-

@@ -1,162 +1,54 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { Github, Linkedin, Mail } from 'lucide-react';
 import { personalInfo } from '@/lib/data';
+import { Container } from './ui/Section';
 
 export default function Footer() {
-  const currentYear = new Date().getFullYear();
+  const year = new Date().getFullYear();
+
+  // Skip anything not configured rather than linking to nowhere.
+  const socials = [
+    { href: personalInfo.social.github, label: 'GitHub', Icon: Github },
+    { href: personalInfo.social.linkedin, label: 'LinkedIn', Icon: Linkedin },
+    {
+      href: personalInfo.email ? `mailto:${personalInfo.email}` : '',
+      label: 'Email',
+      Icon: Mail,
+    },
+  ].filter((social) => social.href);
 
   return (
-    <footer className="relative py-12 overflow-hidden border-t border-white/5">
-      {/* Background */}
-      <div className="absolute inset-0 bg-noir-950" />
-
-      <div className="relative container mx-auto px-6">
-        <div className="max-w-6xl mx-auto">
-          {/* Main Footer Content */}
-          <div className="grid md:grid-cols-3 gap-12 mb-12">
-            {/* Brand */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-            >
-              <h3 className="text-2xl font-bold mb-3 neon-text">
-                Mohammad Shahid Raza
-              </h3>
-              <p className="text-gray-400 text-sm leading-relaxed">
-                AI/ML Engineer crafting intelligent solutions that transform data into actionable insights.
-              </p>
-            </motion.div>
-
-            {/* Quick Links */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-            >
-              <h4 className="text-sm font-bold uppercase tracking-wider text-aurora-cyan mb-4">
-                Quick Links
-              </h4>
-              <ul className="space-y-2">
-                {['About', 'Skills', 'Experience', 'Projects', 'Contact'].map((link) => (
-                  <li key={link}>
-                    <a
-                      href={`#${link.toLowerCase()}`}
-                      className="text-gray-400 hover:text-aurora-cyan transition-colors text-sm"
-                    >
-                      {link}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </motion.div>
-
-            {/* Social Links */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-            >
-              <h4 className="text-sm font-bold uppercase tracking-wider text-aurora-cyan mb-4">
-                Connect
-              </h4>
-              <div className="flex flex-wrap gap-3">
-                {personalInfo.social.github && (
-                  <SocialLink
-                    href={personalInfo.social.github}
-                    label="GitHub"
-                    icon="💻"
-                  />
-                )}
-                {personalInfo.social.linkedin && (
-                  <SocialLink
-                    href={personalInfo.social.linkedin}
-                    label="LinkedIn"
-                    icon="💼"
-                  />
-                )}
-                {personalInfo.social.twitter && (
-                  <SocialLink
-                    href={personalInfo.social.twitter}
-                    label="Twitter"
-                    icon="🐦"
-                  />
-                )}
-                {personalInfo.email && (
-                  <SocialLink
-                    href={`mailto:${personalInfo.email}`}
-                    label="Email"
-                    icon="📧"
-                  />
-                )}
-              </div>
-            </motion.div>
+    <footer className="border-t border-line bg-elevated/40 py-10">
+      <Container>
+        <div className="flex flex-col items-center gap-6 sm:flex-row sm:justify-between">
+          <div className="text-center sm:text-left">
+            <p className="text-sm font-semibold text-ink">{personalInfo.name}</p>
+            <p className="mt-1 text-sm text-muted">
+              {[personalInfo.title, personalInfo.phone].filter(Boolean).join(' · ')}
+            </p>
           </div>
 
-          {/* Bottom Bar */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-            className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4"
-          >
-            <p className="text-gray-500 text-sm">
-              © {currentYear} Mohammad Shahid Raza. Built with Next.js, TypeScript & Three.js
-            </p>
-            <div className="flex items-center gap-2 text-sm text-gray-500">
-              <span>Made with</span>
-              <motion.span
-                animate={{
-                  scale: [1, 1.2, 1],
-                }}
-                transition={{
-                  duration: 1,
-                  repeat: Infinity,
-                  repeatDelay: 1,
-                }}
-                className="text-aurora-pink"
+          <div className="flex gap-2">
+            {socials.map(({ href, label, Icon }) => (
+              <a
+                key={label}
+                href={href}
+                aria-label={label}
+                target={href.startsWith('mailto:') ? undefined : '_blank'}
+                rel="noopener noreferrer"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-line bg-surface text-muted transition-colors hover:border-line-strong hover:text-ink"
               >
-                ❤️
-              </motion.span>
-              <span>and</span>
-              <span className="text-aurora-cyan">AI</span>
-            </div>
-          </motion.div>
+                <Icon className="h-[18px] w-[18px]" />
+              </a>
+            ))}
+          </div>
         </div>
-      </div>
 
-      {/* Exit Animation Elements */}
-      <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-aurora-cyan to-transparent opacity-50" />
+        <p className="mt-8 border-t border-line pt-6 text-center text-xs text-muted">
+          © {year} {personalInfo.name}. All rights reserved.
+        </p>
+      </Container>
     </footer>
-  );
-}
-
-function SocialLink({
-  href,
-  label,
-  icon,
-}: {
-  href: string;
-  label: string;
-  icon: string;
-}) {
-  return (
-    <motion.a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      whileHover={{ scale: 1.1, y: -2 }}
-      className="glass-card px-4 py-2 rounded-full border-white/10 hover:border-aurora-cyan/50 transition-all flex items-center gap-2 text-sm"
-    >
-      <span>{icon}</span>
-      <span className="text-gray-400 hover:text-white transition-colors">
-        {label}
-      </span>
-    </motion.a>
   );
 }

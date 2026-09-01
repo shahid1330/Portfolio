@@ -1,16 +1,16 @@
 export const personalInfo = {
   name: "Mohammad Shahid Raza",
-  title: "AI/ML Engineer | Data Scientist | Data Engineer",
-  tagline: "Aspiring AI/ML Engineer passionate about building intelligent solutions",
-  bio: `Motivated fresher with strong foundation in Machine Learning, Deep Learning, and Data Engineering. Published 5 research papers and completed hands-on internship at Jharkhand Space Application Center. Seeking opportunities to apply my skills in AI/ML, data science, and innovative tech projects.`,
-  quote: "Transforming data into actionable insights through innovation and research",
+  title: "Software Engineer | AI/ML Engineer | Data Scientist",
+  bio: `Software Engineer at Simplify3x, building AI-powered developer tooling with large language models across the TypeScript and Node.js stack. Published 5 research papers in machine learning and computer vision, with earlier hands-on ML and data engineering work at Jharkhand Space Application Center.`,
   location: "India",
+  // Set NEXT_PUBLIC_EMAIL / NEXT_PUBLIC_PHONE in .env.local. Anything left
+  // blank is hidden by the UI rather than rendered as an empty link.
   email: process.env.NEXT_PUBLIC_EMAIL || "",
-  phone: "+91 XXXXXXXXXX",
+  phone: process.env.NEXT_PUBLIC_PHONE || "",
   resume: "/Mohammad_Shahid_Raza_resume.pdf",
-  profileImage: "/Shahid Linkedin.jpeg",
   image: "/Shahid Linkedin.jpeg",
   roles: [
+    "Software Engineer",
     "AI/ML Engineer",
     "Data Scientist",
     "Data Engineer"
@@ -19,7 +19,6 @@ export const personalInfo = {
   social: {
     github: process.env.NEXT_PUBLIC_GITHUB || "https://github.com/shahid1330",
     linkedin: process.env.NEXT_PUBLIC_LINKEDIN || "",
-    twitter: process.env.NEXT_PUBLIC_TWITTER || "",
   },
 
   codingProfiles: [
@@ -39,31 +38,31 @@ export const personalInfo = {
     {
       title: "Advanced Machine Learning Framework for Precision Rainfall Prediction for Jharkhand India",
       webLink: "https://ieeexplore.ieee.org/abstract/document/11156230",
-      pdfLink: "https://drive.google.com/file/d/1CuXzFNk9zvCf74gOOS8efvPQHVdk1MsI/view?usp=sharing",
+      pdfLink: "/Advanced_Machine_Learning_Framework_for_Precision_Rainfall_Prediction_for_Jharkhand_India.pdf",
       year: 2024,
     },
     {
       title: "Automated speed breaker system using IoVT generated data for Electric Vehicle using Machine Learning",
       webLink: "https://ieeexplore.ieee.org/abstract/document/10306443",
-      pdfLink: "https://drive.google.com/file/d/1cITwBdzJIKH43fl71WbgKvpBYSS8lRq8/view?usp=sharing",
+      pdfLink: "/Automated_speed_breaker_system_using_IoVT_generated_data_for_Electric_Vehicle_using_Machine_Learning2.pdf",
       year: 2024,
     },
     {
       title: "Enhancing Handwritten Alphabet Prediction with Realtime IoT Sensor Integration in Machine Learning for Image",
       webLink: "https://reference-global.com/article/10.2478/jsiot-2022-0004",
-      pdfLink: "https://drive.google.com/file/d/11vUFPYKZPJbxsxL2ak7X_NMJSk0ALEAU/view?usp=sharing",
+      pdfLink: "/Enhancing-Handwritten-Alphabet-Prediction-with-Realtime-IoT-Sensor-Integration-in-Machine-Learning-for-Image.pdf",
       year: 2023,
     },
     {
       title: "Galaxy shape classification using Deep Learning",
       webLink: "https://link.springer.com/chapter/10.1007/978-3-031-37164-6_43",
-      pdfLink: "https://drive.google.com/file/d/1juxzBaxoK2ZJuq6tNHgBmd9gVC3T6f6e/view?usp=sharing",
+      pdfLink: "/Galaxy_shape_paper.pdf",
       year: 2023,
     },
     {
       title: "Handwritten Digit Recognition",
       webLink: "https://f1000research.com/articles/14-274",
-      pdfLink: "https://drive.google.com/file/d/1Gi_TDdDjXGQTBIcRSDPVbDb9AwuBaoO8/view?usp=sharing",
+      pdfLink: "/Handwritten Digit Recognition.pdf",
       year: 2023,
     },
   ],
@@ -73,6 +72,7 @@ export const skills = {
   "Programming Languages": [
     "Python",
     "Java",
+    "TypeScript",
   ],
   "Data Science & Machine Learning": [
     "Machine Learning",
@@ -89,6 +89,11 @@ export const skills = {
     "Matplotlib",
     "Seaborn",
     "FastAPI",
+  ],
+  "Web & Backend Development": [
+    "React.js",
+    "Node.js",
+    "Express",
   ],
   "Data Engineering & MLOps": [
     "ETL Pipelines",
@@ -115,6 +120,8 @@ export const skills = {
   "Databases & Core Concepts": [
     "PostgreSQL",
     "MySQL",
+    "MongoDB",
+    "Redis",
     "RESTful APIs",
     "JWT Authentication",
     "Object-Oriented Programming (OOP)",
@@ -122,7 +129,32 @@ export const skills = {
   ],
 };
 
+// Most recent first. A period ending in "Present" marks the role as current.
 export const experience = [
+  {
+    role: "Software Engineer",
+    company: "Simplify3x Software Private Limited",
+    period: "February 2026 - Present",
+    location: "Bengaluru, Karnataka, India",
+    description: "Full-time · On-site",
+    achievements: [
+      "Developed an AI-powered coding assistant as a VS Code extension, integrating multiple LLM providers to deliver inline code suggestions and automated test generation.",
+      "Built a document-to-requirements pipeline using LLMs, converting uploaded specifications and design files into structured user stories and reducing manual effort.",
+      "Designed and implemented role-based access control across a React and Node.js application, securing all modules with granular, permission-driven access.",
+      "Resolved critical session-management and state bugs in a multi-tab environment, significantly improving application stability.",
+    ],
+    tech: [
+      "TypeScript",
+      "React.js",
+      "Node.js",
+      "Express",
+      "MongoDB",
+      "PostgreSQL",
+      "Redis",
+      "AWS",
+      "Large Language Models (LLM)",
+    ],
+  },
   {
     role: "Project Intern",
     company: "Jharkhand Space Application Center",
@@ -134,6 +166,7 @@ export const experience = [
       "Processed and integrated over 2.2 million data points by developing scalable ETL pipelines using Python (Pandas, NumPy) and Scikit-learn, reducing processing time by 30%.",
       "Generated 4+ interactive dashboards using Matplotlib and Seaborn, enabling non-technical stakeholders to interpret trends and insights, and improved model explainability by 25% through feature importance analysis and visual storytelling.",
     ],
+    tech: [],
   },
 ];
 
@@ -206,12 +239,12 @@ export const projects = [
   },
   {
     name: "Driver Drowsiness Detection System",
-    github: "https://github.com/shahid1330/Driver-Drowsiness-Detection-System",
+    github: "https://github.com/shahid1330/Driver-Monitoring-System",
     description: "Real-time driver monitoring system using computer vision and deep learning"
   },
   {
     name: "Potato Leaf Disease Detection",
-    github: "https://github.com/shahid1330/Potato-Leaf-Disease-Detection",
+    github: "https://github.com/shahid1330/LeafDisease",
     description: "CNN-based agricultural solution for detecting potato plant diseases"
   },
 ];
