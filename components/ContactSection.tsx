@@ -19,7 +19,7 @@ const inputClass =
 
 type Status = 'idle' | 'sending' | 'sent' | 'error';
 
-const emptyForm = { firstName: '', lastName: '', email: '', message: '', company: '' };
+const emptyForm = { firstName: '', lastName: '', email: '', message: '' };
 
 /** Reasons the route can return, mapped to something a visitor can act on. */
 const errorCopy: Record<string, string> = {
@@ -36,6 +36,10 @@ const errorCopy: Record<string, string> = {
 export default function ContactSection() {
   const [form, setForm] = useState(emptyForm);
   const [status, setStatus] = useState<Status>('idle');
+  // Honeypot. A checkbox rather than a text field: browsers autofill inputs
+  // named company/organization even with autoComplete off, which would make
+  // this silently swallow a real visitor's message.
+  const [botcheck, setBotcheck] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
   const handleChange = (
@@ -56,9 +60,9 @@ export default function ContactSection() {
       return;
     }
 
-    // Bots fill every field they find; a human never sees this one. Report
+    // Bots tick every box they find; a human never sees this one. Report
     // success so the bot does not retry, but send nothing.
-    if (form.company.trim()) {
+    if (botcheck) {
       setStatus('sent');
       setForm(emptyForm);
       return;
@@ -92,9 +96,13 @@ export default function ContactSection() {
         return;
       }
 
+      // Visitors get friendly copy; the real reason goes to the console so a
+      // delivery problem can be diagnosed without guessing.
+      console.error('Web3Forms rejected the submission:', res.status, data);
       setStatus('error');
       setErrorMessage(errorCopy.provider_error);
-    } catch {
+    } catch (error) {
+      console.error('Could not reach Web3Forms:', error);
       setStatus('error');
       setErrorMessage(errorCopy.network);
     }
@@ -201,17 +209,18 @@ export default function ContactSection() {
               />
             </div>
 
-            {/* Honeypot: off-screen and hidden from assistive tech, so only bots fill it. */}
+            {/* Honeypot: off-screen and hidden from assistive tech. A checkbox
+                is used because browsers never autofill one. */}
             <div aria-hidden className="absolute left-[-9999px] h-0 w-0 overflow-hidden">
-              <label htmlFor="company">Company</label>
+              <label htmlFor="botcheck">Leave this box unchecked</label>
               <input
-                id="company"
-                name="company"
-                type="text"
+                id="botcheck"
+                name="botcheck"
+                type="checkbox"
                 tabIndex={-1}
                 autoComplete="off"
-                value={form.company}
-                onChange={handleChange}
+                checked={botcheck}
+                onChange={(e) => setBotcheck(e.target.checked)}
               />
             </div>
 
