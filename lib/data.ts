@@ -1,6 +1,6 @@
 export const personalInfo = {
   name: "Mohammad Shahid Raza",
-  title: "Software Engineer | AI/ML Engineer | Data Scientist",
+  title: "Software Engineer",
   bio: `Software Engineer at Simplify3x, building AI-powered developer tooling with large language models across the TypeScript and Node.js stack. Published 5 research papers in machine learning and computer vision, with earlier hands-on ML and data engineering work at Jharkhand Space Application Center.`,
   location: "India",
   // Set NEXT_PUBLIC_EMAIL / NEXT_PUBLIC_PHONE in .env.local. Anything left
@@ -9,11 +9,9 @@ export const personalInfo = {
   phone: process.env.NEXT_PUBLIC_PHONE || "",
   resume: "/Mohammad_Shahid_Raza_resume.pdf",
   image: "/Shahid Linkedin.jpeg",
+  // A single entry types once and stops; more than one cycles.
   roles: [
     "Software Engineer",
-    "AI/ML Engineer",
-    "Data Scientist",
-    "Data Engineer"
   ],
   
   social: {

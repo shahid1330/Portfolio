@@ -136,7 +136,7 @@ export default function ContactSection() {
                   disabled={sending}
                   value={form.firstName}
                   onChange={handleChange}
-                  placeholder="Ada"
+                  placeholder="First name"
                   className={inputClass}
                 />
               </div>
@@ -154,7 +154,7 @@ export default function ContactSection() {
                   disabled={sending}
                   value={form.lastName}
                   onChange={handleChange}
-                  placeholder="Lovelace"
+                  placeholder="Second name"
                   className={inputClass}
                 />
               </div>
@@ -175,7 +175,7 @@ export default function ContactSection() {
                 disabled={sending}
                 value={form.email}
                 onChange={handleChange}
-                placeholder="you@example.com"
+                placeholder="Your email"
                 className={inputClass}
               />
             </div>

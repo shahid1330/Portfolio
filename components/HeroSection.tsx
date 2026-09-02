@@ -26,6 +26,9 @@ function useTypewriter(words: string[]) {
     const word = words[index];
 
     if (!deleting && text === word) {
+      // With a single role there is nothing to cycle to, so type it once and
+      // leave it — deleting and retyping the same words would just be noise.
+      if (words.length === 1) return;
       const t = setTimeout(() => setDeleting(true), 2000);
       return () => clearTimeout(t);
     }
